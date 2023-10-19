@@ -1,0 +1,46 @@
+version: "3"
+services:
+  frontend:
+    build:
+      context: ./frontend
+    volumes:
+      - ./frontend/html:/usr/share/nginx/html
+    networks:
+      mySubnet:
+        ipv4_address: 172.22.0.2
+    privileged: true
+    ports:
+      - 3001:80
+
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - 3000:3000
+    networks:
+      mySubnet:
+        ipv4_address: 172.22.0.3
+    environment:
+      - ACCESS_KEY=r0qR5JkixO1PCgRqW2PH
+      - SECRET_KEY=9oYnkPfjty9UMuEchjZvfE5cCKAUulVIyGoj1YXO
+      - HOST=172.22.0.4
+
+  minio:
+    image: bitnami/minio:latest
+    volumes:
+      - ./minIO/data:/bitnami/minio/data
+    networks:
+      mySubnet:
+        ipv4_address: 172.22.0.4
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+    privileged: true
+
+networks:
+  mySubnet:
+    name: mySubnet
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.22.0.0/16

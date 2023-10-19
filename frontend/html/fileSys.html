@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>File System</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+    crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
+    integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
+    crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"
+    integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+"
+    crossorigin="anonymous"></script>
+</head>
+
+<body>
+  <div class="d-flex align-items-center justify-content-center"
+    style="margin-left: 20%;margin-right: 20%;margin-top: 7%;">
+    <div class="container text-center" id="container">
+
+      <div class="row" style="margin-bottom: 20px;">
+        <div class="col d-flex justify-content-start align-items-center" style="margin-left: 2%;">
+          <h1 style="margin-bottom: 0px;">File System</h1>
+        </div>
+        <div class="col d-flex justify-content-end" style="margin-right: 2%;">
+          <button type="button" class="btn btn-secondary fw-bold btn-lg " style="width: 140px;" data-bs-toggle="modal"
+            data-bs-target="#modal2">☁ Upload
+        </div>
+      </div>
+
+      <div class="row d-flex align-items-center border-bottom" style="height: 30px;margin-left: 5px;margin-right: 5px;">
+        <div class="col-sm-4 d-flex justify-content-start">
+          <p class="text-secondary">
+            Name
+          </p>
+        </div>
+        <div class="col-sm-4 d-flex justify-content-start ">
+          <p class="text-secondary">
+            Last Modified
+          </p>
+        </div>
+        <div class="col-sm-2 d-flex justify-content-start">
+          <p class="text-secondary">
+            Size
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- Modal -->
+  <div class="modal fade" id="modal1" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel">Alert</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body d-flex justify-content-center align-items-center">
+          <h4 id="delFileN"></h4>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger active" id="deleteBtn">Remove</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modal2" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel">Select File</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body d-flex justify-content-center align-items-center">
+          <div class="mb-3">
+            <input class="form-control" type="file" id="formFile" name="file">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="submitBtn" class="btn btn-secondary fw-bold">
+            <div id="submitText">
+              upload
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+
+
+<script>
+
+  let host = 'http://192.168.117.128:3000';
+  document.getElementById('submitBtn').onclick = submitFile
+
+  // set file list
+  const conainer = document.getElementById('container');
+  axios.get(host + '/objList').then(function (res) {
+    objList = res.data
+    for (let i = 0; i < objList.length; i++) {
+      conainer.innerHTML += "<div class='row d-flex align-items-center' style='height: 55px;margin-left: 5px;margin-right: 5px;'><div class='col-sm-4 d-flex justify-content-start'><a href='" + host + "/download/" + encodeURI(objList[i]["name"]) + "'>" + objList[i]["name"] + "</a></div><div class='col-sm-4 d-flex justify-content-start'>" + dateConverter(objList[i]["lastModified"]) + "</div><div class='col-sm-2 d-flex justify-content-start'>" + sizeConverter(objList[i]["size"]) + "</div><div class='col-sm-2 d-flex justify-content-end'><button id='test' type='button' value='" + objList[i]["name"] + "' data-bs-toggle='modal' data-bs-target='#modal1' class='btn btn-outline-danger btn-sm ' onclick='deleteLink(this.value)'>♻︎ remove</button></div>"
+    }
+  })
+
+  // date converter
+  function dateConverter(date) {
+    let words = date.split('T');
+    words[1] = words[1].split('.')[0]
+    return words[0] + ' ' + words[1]
+  }
+
+  // size converter
+  function sizeConverter(size) {
+    switch (true) {
+      case size / 1048576 > 1:
+        return (Math.round(size / 1048576)).toString() + ((size % 1048576).toFixed(0)).toString().slice(0, 2) + 'MiB'
+      case size / 1024 > 1:
+        return (Math.round(size / 1024)).toString() + '.' + ((size % 1024).toFixed(0)).toString().slice(0, 2) + ' KiB'
+      default:
+        return size + ' B'
+    }
+  }
+
+  // sleep func
+  function sleep(milliseconds) {
+    var start = new Date().getTime();
+    while (1)
+      if ((new Date().getTime() - start) > milliseconds)
+        break;
+  }
+
+  // function set delete info
+  function deleteLink(fileName) {
+    document.getElementById('delFileN').innerText = "Remove " + fileName + " ?"
+    document.getElementById('deleteBtn').onclick = function () {
+      axios.get(host + '/remove/' + encodeURI(fileName)).then(function (res) {
+        location.reload()
+      })
+    }
+  }
+
+  // submit file func
+  function submitFile() {
+    document.getElementById('submitText').innerHTML = "<div class='spinner-border' role='status'></div>"
+    document.getElementById('submitBtn').disabled = true
+
+
+    var formData = new FormData();
+    var file = document.getElementById('formFile');
+    formData.append("file", file.files[0]);
+    let config = {
+      method: 'post',
+      url: host + '/upload',
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      },
+      data: formData
+    };
+
+    axios.request(config)
+      .then((response) => {
+        location.reload()
+      })
+      .catch((error) => {
+        alert('上傳失敗')
+      });
+  }
+</script>
+
+</html>
